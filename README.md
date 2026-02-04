@@ -1,5 +1,8 @@
 # Chargeback & Fraud Triage Platform
 
+<img width="2752" height="1536" alt="chargeback-fraud-triage " src="https://github.com/user-attachments/assets/77df53d5-46b0-4fcf-b511-24c4bf3e8538" />
+
+
 Local-first, explainable fraud triage platform built with Node.js + FastAPI and KNN similarity scoring.
 
 It is designed for analyst workflows where decisions must be fast and interpretable: each score is backed by similar historical cases, neighbor fraud ratio, and distance evidence.
