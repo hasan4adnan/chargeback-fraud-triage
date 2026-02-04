@@ -1,0 +1,15 @@
+{
+  "feature_columns": [
+    "Amount",
+    "transactions_last_1h",
+    "transactions_last_24h",
+    "avg_amount_last_7d_per_card",
+    "std_amount_last_30d_per_card",
+    "time_since_last_transaction",
+    "same_amount_repeat_count",
+    "night_transaction"
+  ],
+  "n_neighbors": 15,
+  "dataset": "data/sample_transactions.csv",
+  "target_column": "CBK"
+}

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+node_modules/
+.env
+.DS_Store
+models/*.bin
+models/*.pkl
+models/*.npy
+api/package-lock.json

@@ -1,0 +1,14 @@
+{
+  "name": "fraud-triage-api",
+  "version": "1.0.0",
+  "description": "Control-plane API for fraud triage",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "NODE_ENV=development node --watch src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
