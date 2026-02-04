@@ -1,37 +1,61 @@
 # Chargeback & Fraud Triage Platform
 
-Local, explainable fraud triage system using KNN similarity scoring.
+Local-first, explainable fraud triage platform built with Node.js + FastAPI and KNN similarity scoring.
 
-This project is designed as a practical decision-support tool: it scores a transaction, shows similar historical cases, and returns an operational triage decision.
+It is designed for analyst workflows where decisions must be fast and interpretable: each score is backed by similar historical cases, neighbor fraud ratio, and distance evidence.
 
-## What It Does
+## Business Problem This Solves
 
-- Scores transaction risk with KNN (`risk_score`)
-- Returns explainability payload:
+Fraud and chargeback handling is not only an ML problem, it is an operations problem.
+
+Fraud teams face high transaction volume, limited manual review capacity, and high costs from both:
+
+- false negatives (missed fraud and chargeback losses)
+- false positives (blocking legitimate users and hurting revenue/trust)
+
+This project helps teams:
+
+- prioritize which transactions to review first
+- understand why a transaction is suspicious using similar historical cases
+- apply consistent triage decisions (`auto_approve`, `manual_review`, `auto_block`)
+
+The result is faster investigations, clearer analyst decisions, and better auditability.
+
+## Core Capabilities
+
+- Transaction risk scoring with KNN (`risk_score`)
+- Explainability payload:
   - nearest historical case IDs
   - fraud ratio among neighbors
-  - neighbor distances
-  - human-readable rationale
-- Applies triage policy:
+  - distance list
+  - rationale string
+- Operational triage decisions:
   - `auto_approve`
   - `manual_review`
   - `auto_block`
+- Configurable thresholds via environment variables
 
-## Architecture (Local Only)
+## Local Architecture
 
-- `api/` (Node.js): request validation + triage decision thresholds
-- `ml_service/` (FastAPI): KNN inference + explainability
-- `scripts/train_model.py`: trains artifacts from the prepared dataset
+- `api/` (Node.js control plane)
+  - validates request payload
+  - applies decision thresholds
+  - exposes stable API contract
+- `ml_service/` (FastAPI inference plane)
+  - loads trained artifacts from `models/`
+  - runs KNN inference and neighbor search
+  - returns explainability fields
 
-Flow:
-1. Client/Postman calls `POST /score_transaction` on Node API (`:3000`)
-2. Node API calls ML service `POST /score` (`:8001`)
-3. ML service returns score + evidence
-4. Node API returns final triage response
+### Request Flow
 
-## Dataset Assumption
+1. Client calls `POST /score_transaction` on Node API (`localhost:3000`).
+2. Node forwards payload to ML service (`localhost:8001/score`).
+3. ML service computes score + evidence.
+4. Node applies thresholds and returns final decision payload.
 
-Dataset is already prepared and located at:
+## Dataset
+
+Prepared dataset path:
 
 - `data/sample_transactions.csv`
 
@@ -50,6 +74,10 @@ Expected columns:
 - `same_amount_repeat_count`
 - `night_transaction`
 
+Notes:
+- `CBK` is the target (`Yes`/`No`).
+- No additional feature engineering is required in this version.
+
 ## Requirements
 
 - Python 3.11+
@@ -63,7 +91,7 @@ From project root:
 cd chargeback-fraud-triage
 ```
 
-### 1) Install Python deps and train model artifacts
+### 1) Install Python dependencies and train artifacts
 
 Option A (venv):
 
@@ -88,7 +116,7 @@ python scripts/train_model.py --input data/sample_transactions.csv --output-dir 
 uvicorn ml_service.app.main:app --host 0.0.0.0 --port 8001
 ```
 
-Health check:
+Health:
 
 ```bash
 curl http://localhost:8001/health
@@ -102,13 +130,13 @@ npm install
 ML_SERVICE_URL=http://localhost:8001 npm start
 ```
 
-Health check:
+Health:
 
 ```bash
 curl http://localhost:3000/health
 ```
 
-## Postman Test
+## Postman Test (Recommended)
 
 - Method: `POST`
 - URL: `http://localhost:3000/score_transaction`
@@ -140,9 +168,9 @@ ML service (`http://localhost:8001`):
 
 - `GET /health`
 - `POST /score`
-- `POST /score_transaction` (direct ML scoring with decision)
+- `POST /score_transaction` (direct scoring path)
 
-## Example Response
+## Response Shape (Node API)
 
 ```json
 {
@@ -150,9 +178,9 @@ ML service (`http://localhost:8001`):
   "risk_score": 0.8052,
   "confidence_band": "high",
   "decision": "auto_block",
-  "nearest_neighbors": [8157, 4975],
+  "nearest_neighbors": [8157, 4975, 4974],
   "fraud_ratio_neighbors": 0.8,
-  "distances": [5.2152, 5.6265],
+  "distances": [5.2152, 5.6265, 5.8364],
   "rationale": "This transaction is similar to 15 historical cases; 12 were confirmed fraud.",
   "thresholds": {
     "low_threshold": 0.35,
@@ -161,9 +189,9 @@ ML service (`http://localhost:8001`):
 }
 ```
 
-## Triage Thresholds
+## Decision Thresholds
 
-Node API thresholds are configurable via env vars:
+Configured in Node API:
 
 - `LOW_THRESHOLD` (default: `0.35`)
 - `HIGH_THRESHOLD` (default: `0.75`)
@@ -174,14 +202,29 @@ Example:
 LOW_THRESHOLD=0.30 HIGH_THRESHOLD=0.70 ML_SERVICE_URL=http://localhost:8001 npm start
 ```
 
+## Model Artifacts
+
+Generated in `models/` by `scripts/train_model.py`:
+
+- `scaler.joblib`
+- `knn_classifier.joblib`
+- `nn_index.joblib`
+- `reference.joblib`
+- `scaled_matrix.joblib`
+- `runtime_bundle.npz`
+- `runtime_bundle.json`
+- `metadata.json`
+
 ## Common Issues
 
 - `Cannot GET /score_transaction`
-  - Use `POST`, not `GET`.
+  - Use `POST` method.
 - `Unexpected non-whitespace character after JSON`
-  - JSON body has invalid syntax (usually trailing comma).
+  - Fix JSON syntax (remove trailing comma).
 - `cd: no such file or directory: api`
-  - You are not in `chargeback-fraud-triage/` root.
+  - Ensure you are inside `chargeback-fraud-triage/` before `cd api`.
+- `FileNotFoundError: models/scaler.joblib`
+  - Run training script before starting ML service.
 
 ## Project Structure
 
