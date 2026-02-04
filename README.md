@@ -241,4 +241,4 @@ chargeback-fraud-triage/
 
 ## License
 
-MIT (or your preferred license).
+MIT 
