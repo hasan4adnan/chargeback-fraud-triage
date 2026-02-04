@@ -231,12 +231,45 @@ Generated in `models/` by `scripts/train_model.py`:
 ```text
 chargeback-fraud-triage/
 ├── README.md
+├── .gitignore
 ├── api/
-├── data/
-├── docs/
+│   ├── package.json
+│   ├── package-lock.json
+│   └── src/
+│       ├── app.js
+│       ├── routes/
+│       │   └── scoreRoutes.js
+│       ├── controllers/
+│       │   └── scoreController.js
+│       └── services/
+│           └── mlClient.js
 ├── ml_service/
+│   ├── requirements.txt
+│   └── app/
+│       ├── main.py
+│       ├── schemas.py
+│       ├── inference.py
+│       ├── knn_model.py
+│       └── feature_engineering.py
+├── scripts/
+│   ├── train_model.py
+│   └── build_index.py
+├── data/
+│   ├── sample_transactions.csv
+│   └── Chargeack_Frauds.csv
 ├── models/
-└── scripts/
+│   ├── scaler.joblib
+│   ├── knn_classifier.joblib
+│   ├── nn_index.joblib
+│   ├── reference.joblib
+│   ├── scaled_matrix.joblib
+│   ├── runtime_bundle.npz
+│   ├── runtime_bundle.json
+│   └── metadata.json
+└── docs/
+    ├── architecture.md
+    ├── cost_analysis.md
+    └── decisions.md
 ```
 
 ## License
